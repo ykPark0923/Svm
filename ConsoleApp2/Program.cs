@@ -202,31 +202,44 @@ namespace ConsoleApp2
 
 
 
+
+
+
                 // ROI, 특징추출
                 // x = 160 열부터 150픽셀, y=0 행부터 255픽셀 추출
                 Mat mixedRight = mixed.SubMat(new Rect(160, 0, 150, 255));
 
 
+
+
+
                 // 유효한 픽셀(0이 아닌 값) 위치 찾기
                 List<int> res = new List<int>();
-                for (int i = 0; i < mixedRight.Rows; i++)
+                // mixedRight의 각 행을 탐색하여 0이 아닌 픽셀의 행 인덱스를 res 리스트에 저장
+                for (int i = 0; i < mixedRight.Rows; i++) // mixedRight의 모든 행을 반복하며 값 확인
                 {
-                    if (mixedRight.Get<double>(i, 0) > 0)
-                        res.Add(i);
+                    if (mixedRight.Get<double>(i, 0) > 0) // 첫번째 열(열 인덱스 0)의 픽셀 값이 0보다 크다면
+                        res.Add(i); // 해당 행의 인덱스를 리스트에 추가
                 }
 
+                // 유효한 픽셀이 존재하는 경우만 특징을 추출
                 if (res.Count > 0)
                 {
+                    // 가장 아래쪽(최대 인덱스)에 있는 유효한 픽셀의 행 번호 찾기
                     int maxn = res.Max();
+                    // 최하단 유효 픽셀 위치에서 80개 위쪽까지 특징을 추출하기 위해 시작점 설정
                     int minn = maxn - 80;
+                    // 80개의 특징 벡터를 저장할 배열 생성
                     double[] vector = new double[80];
 
+
+                    // 특징 벡터 추출 (아래에서 위 방향으로 저장)
                     for (int i = minn, num = 0; i < maxn; i++, num++)
                     {
-                        int iii = maxn - num;
-                        vector[num] = mixedRight.Get<double>(iii, 0);
+                        int iii = maxn - num; // 최신(가장 아래쪽) 픽셀부터 위쪽 방향으로 채우기
+                        vector[num] = mixedRight.Get<double>(iii, 0); // 해당 행의 첫 번째 열 값 저장
                     }
-
+                    // 추출한 80개의 특징 벡터를 최종 processedVectors 배열에 저장
                     for (int i = 0; i < 80; i++)
                     {
                         processedVectors[j, i] = vector[i];
@@ -236,64 +249,83 @@ namespace ConsoleApp2
             return processedVectors;
         }
 
+
+
+
         // Skeletonization
         static Mat Skeletonize(Mat img)
         {
-            Mat skel = Mat.Zeros(img.Size(), MatType.CV_8UC1);
-            Mat temp = new Mat();
+            Mat skel = Mat.Zeros(img.Size(), MatType.CV_8UC1); // 결과를 저장할 빈 행렬 (0으로 초기화, 크기는 원본 이미지와 동일)
+            Mat temp = new Mat(); // 임시 변수 선언
             Mat eroded = new Mat();
-            Mat element = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(3, 3));
+            Mat element = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(3, 3)); // 구조화 요소(Structuring Element) 생성 (3x3 사각형 커널)
 
             while (true)
             {
-                Cv2.Erode(img, eroded, element);
-                Cv2.Dilate(eroded, temp, element);
-                Cv2.Subtract(img, temp, temp);
+                /*
+                 * Cv2.Erode(입력 이미지, 출력 이미지, 구조화 요소(커널(3*3이라 픽셀을 축소하는 방식으로 동작)), 반복 횟수(옵션));
+                 * Erode : 작은 노이즈를 제거하거나, 윤곽선을 점진적으로 축소하는 데 사용
+                 */
+                Cv2.Erode(img, eroded, element); // 이미지 침식 (Erosion) → 객체의 외곽을 제거하여 크기 축소
+                Cv2.Dilate(eroded, temp, element); // 침식된 이미지 팽창 (Dilation) → 객체를 원래 크기로 복원
+                Cv2.Subtract(img, temp, temp); // 원본에서 팽창된 이미지를 빼서 윤곽선만 남김
 
-                if (temp.Type() != skel.Type())
+                if (temp.Type() != skel.Type()) // 데이터 타입이 다를 경우 변환 (안정적인 연산을 위해 필요)
                 {
                     temp.ConvertTo(temp, MatType.CV_8UC1);
                 }
 
-                Cv2.BitwiseOr(skel, temp, skel);
-                eroded.CopyTo(img);
+                Cv2.BitwiseOr(skel, temp, skel); // 윤곽선을 Skeleton 이미지에 추가 (OR 연산)
+                eroded.CopyTo(img); // 원본을 침식된 이미지로 업데이트 (반복)
 
-                if (Cv2.CountNonZero(img) == 0)
+                if (Cv2.CountNonZero(img) == 0) // 모든 픽셀이 0이면 (검은색이면) 반복 종료
                     break;
             }
-            return skel;
+            return skel; // 결과 반환 (Skeletonized 이미지)
         }
 
         // JSON 파일에서 라벨데이터 로드
         static double[] LoadLabels(string filePath)
         {
-            string json = File.ReadAllText(filePath);
-            List<double> rawLabels = JsonConvert.DeserializeObject<List<double>>(json);
+            string json = File.ReadAllText(filePath); // JSON 파일을 읽어 문자열로 저장
+            List<double> rawLabels = JsonConvert.DeserializeObject<List<double>>(json); // JSON 데이터를 List<double> 형식으로 변환 (리스트로 역직렬화)
 
-            double threshold1 = 0.8;
-            double threshold2 = 1.5;
-            double[] labels = new double[rawLabels.Count];
+            // 임계값(Threshold) 설정
+            double threshold1 = 0.8; // 최소 임계값
+            double threshold2 = 1.5; // 최대 임계값
+            double[] labels = new double[rawLabels.Count]; // 라벨 데이터를 저장할 배열 생성
 
+            // 모든 라벨 데이터 순회하여 변환 수행
             for (int i = 0; i < rawLabels.Count; i++)
             {
-                if (rawLabels[i] < threshold1)
+                if (rawLabels[i] < threshold1) // 값이 threshold1(0.8) 미만이면 0으로 설정
                     labels[i] = 0;
-                else if (rawLabels[i] > threshold2)
+                else if (rawLabels[i] > threshold2) // 값이 threshold2(1.5) 초과이면 0으로 설정
                     labels[i] = 0;
                 else
-                    labels[i] = 1;
+                    labels[i] = 1; // threshold1 이상 threshold2 이하 값이면 1로 설정
             }
-            return labels;
+            return labels; // 변환된 라벨 배열 반환
         }
 
+
+
+
+
         // SVM 학습 및 평가
+        // data → 입력 데이터(특징 벡터, Feature Vector), labels → 각 데이터의 라벨(양품: 1, 불량: 0)
         static void TrainAndEvaluateSVM(double[,] data, double[] labels)
         {
-            int rowCount = data.GetLength(0);
-            int featureCount = data.GetLength(1);
+            int rowCount = data.GetLength(0); // 샘플 개수(행)
+            int featureCount = data.GetLength(1);  // 특징 개수(열)
+
+
+
 
             // 학습 데이터 변환
-            Mat trainX = new Mat(rowCount, featureCount, MatType.CV_32F);
+            Mat trainX = new Mat(rowCount, featureCount, MatType.CV_32F); // OpenCV Mat 객체 생성 (32-bit float)
+            
+            // 1차원 배열로 변환 후 trainX에 저장
             float[] trainDataArray = new float[rowCount * featureCount];
             for (int i = 0; i < rowCount; i++)
             {
@@ -304,19 +336,31 @@ namespace ConsoleApp2
             }
             trainX.SetArray(trainDataArray);
 
-            Mat trainY = new Mat(rowCount, 1, MatType.CV_32S);
-            int[] trainLabelArray = labels.Select(l => (int)l).ToArray();
+
+
+
+
+            // labels를 OpenCV Mat 형식으로 변환
+            Mat trainY = new Mat(rowCount, 1, MatType.CV_32S); // OpenCV Mat 객체 생성 (32-bit 정수형)
+            int[] trainLabelArray = labels.Select(l => (int)l).ToArray(); // double[] labels → int[] 변환
             trainY.SetArray(trainLabelArray);
+
+
+
 
             // SVM 모델 생성 및 학습
             SVM svm = SVM.Create();
-            svm.Type = SVM.Types.CSvc;
-            svm.KernelType = SVM.KernelTypes.Rbf;
-            svm.Degree = 3;
-            svm.Gamma = 1;
-            svm.C = 1;
-            svm.Coef0 = 0;
+            svm.Type = SVM.Types.CSvc; // C-Support Vector Classification (C-SVC) 분류 모델 사용
+            svm.KernelType = SVM.KernelTypes.Rbf; // RBF 커널(Radial Basis Function) 사용
+            svm.Degree = 3; // 다항 커널용 차수 설정 (RBF에서는 사용되지 않음)
+            svm.Gamma = 1; // RBF 커널에서 데이터 분포를 조절하는 파라미터
+            svm.C = 1; // 오류 허용 범위를 조절하는 정규화 파라미터 (C값이 크면 오버피팅 가능성 증가)
+            svm.Coef0 = 0; // 다항 커널 및 시그모이드 커널에서 사용되는 파라미터 (RBF에서는 사용되지 않음)
 
+
+
+
+            // trainX → 입력 데이터, trainY → 정답 라벨, SampleTypes.RowSample → 행 단위로 학습 데이터 제공
             if (svm.Train(trainX, SampleTypes.RowSample, trainY))
             {
                 Console.WriteLine("SVM 학습 완료");
@@ -325,16 +369,14 @@ namespace ConsoleApp2
 
             // 결과 예측
             Mat results = new Mat();
-            svm.Predict(trainX, results);
+            svm.Predict(trainX, results); // 학습된 svm 모델을 사용하여 학습 데이터(trainX)에 대한 예측 수행
 
             // 데이터 타입 변환 (trainY → CV_32FC1로 변환)
-            if (trainY.Type() != results.Type())
+            if (trainY.Type() != results.Type()) // trainY와 results의 데이터 타입이 다르면 변환
             {
-                trainY.ConvertTo(trainY, results.Type());
+                trainY.ConvertTo(trainY, results.Type()); // trainY를 results와 동일한 데이터 타입으로 변환
                 //Console.WriteLine($"Converted TrainY Type: {trainY.Type()}"); // 변환 후 확인
             }
-
-
 
             //Console.WriteLine($"Results Size: {results.Size()}, Type: {results.Type()}");
             //Console.WriteLine($"TrainY Size: {trainY.Size()}, Type: {trainY.Type()}");
@@ -342,9 +384,9 @@ namespace ConsoleApp2
 
             // 정확도 계산
             Mat matches = new Mat();
-            Cv2.Compare(results, trainY, matches, CmpType.EQ);
-            int correctCount = Cv2.CountNonZero(matches);
-            float accuracy = (float)correctCount / trainY.Rows * 100;
+            Cv2.Compare(results, trainY, matches, CmpType.EQ); // results와 trainY 비교 (같으면 1, 다르면 0)
+            int correctCount = Cv2.CountNonZero(matches); // 예측 결과가 맞은 샘플 수 계산
+            float accuracy = (float)correctCount / trainY.Rows * 100; // 정확도(Accuracy) 계산
 
             Console.WriteLine($"Accuracy: {accuracy}%");
         }
