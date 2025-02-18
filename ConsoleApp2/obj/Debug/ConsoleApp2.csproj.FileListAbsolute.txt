@@ -24,3 +24,25 @@ C:\Users\puklo\OneDrive\바탕 화면\UnityAI_Project\OpenCV\ConsoleApp2\Console
 C:\Users\puklo\OneDrive\바탕 화면\UnityAI_Project\OpenCV\ConsoleApp2\ConsoleApp2\obj\Debug\ConsoleA.D5FB4C91.Up2Date
 C:\Users\puklo\OneDrive\바탕 화면\UnityAI_Project\OpenCV\ConsoleApp2\ConsoleApp2\obj\Debug\ConsoleApp2.exe
 C:\Users\puklo\OneDrive\바탕 화면\UnityAI_Project\OpenCV\ConsoleApp2\ConsoleApp2\obj\Debug\ConsoleApp2.pdb
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\ConsoleApp2.exe.config
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\ConsoleApp2.exe
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\ConsoleApp2.pdb
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\Newtonsoft.Json.dll
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\OpenCvSharp.dll
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\System.Buffers.dll
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\System.Memory.dll
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\System.Numerics.Vectors.dll
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\System.ValueTuple.dll
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\Newtonsoft.Json.xml
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\OpenCvSharp.xml
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\System.Buffers.xml
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\System.Memory.xml
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\System.Numerics.Vectors.xml
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+C:\devYK\SvmML\ConsoleApp2\bin\Debug\System.ValueTuple.xml
+C:\devYK\SvmML\ConsoleApp2\obj\Debug\ConsoleApp2.csproj.AssemblyReference.cache
+C:\devYK\SvmML\ConsoleApp2\obj\Debug\ConsoleApp2.csproj.CoreCompileInputs.cache
+C:\devYK\SvmML\ConsoleApp2\obj\Debug\ConsoleA.D5FB4C91.Up2Date
+C:\devYK\SvmML\ConsoleApp2\obj\Debug\ConsoleApp2.exe
+C:\devYK\SvmML\ConsoleApp2\obj\Debug\ConsoleApp2.pdb
